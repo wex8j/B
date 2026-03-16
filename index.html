@@ -3,79 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>يلا مباريات HD - البث المباشر</title>
+    <title>يلا مباريات HD | المنصة العالمية للبث المباشر</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
     <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #0b0b0b; color: #fff; margin: 0; }
-        header { background: #e50914; padding: 15px; text-align: center; font-size: 1.8rem; font-weight: bold; }
-        .container { max-width: 900px; margin: 20px auto; padding: 10px; }
-        
-        /* تصميم المشغل */
-        .video-box { background: #000; border-radius: 10px; overflow: hidden; border: 2px solid #222; margin-bottom: 20px; position: relative; }
-        .video-js { width: 100% !important; height: 450px !important; }
-
-        /* أزرار القنوات */
-        .channels-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 20px; }
-        .chan-btn { 
-            background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 15px; 
-            border-radius: 8px; cursor: pointer; text-align: center; transition: 0.3s; font-weight: bold;
+        :root {
+            --main-red: #e50914;
+            --dark-bg: #0a0a0a;
+            --card-bg: #161616;
+            --gold: #ffcc00;
         }
-        .chan-btn:hover { background: #e50914; color: #fff; transform: translateY(-3px); }
-        .active-chan { background: #e50914; border-color: #fff; }
 
-        .status { padding: 10px; background: #1e1e1e; border-radius: 5px; margin-bottom: 10px; font-size: 0.9rem; color: #ccc; }
-        @media (max-width: 600px) { .video-js { height: 250px !important; } }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--dark-bg);
+            color: #fff;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* رأس الصفحة - هيدر */
+        header {
+            background: linear-gradient(to bottom, #1a1a1a, #000);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--main-red);
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+        }
+
+        .logo { font-size: 1.8rem; font-weight: bold; color: var(--main-red); text-shadow: 2px 2px #000; }
+        .live-dot { height: 10px; width: 10px; background-color: var(--main-red); border-radius: 50%; display: inline-block; margin-left: 5px; animation: pulse 1.5s infinite; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
+
+        /* منطقة المشغل */
+        .video-section {
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid #333;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        .video-js { width: 100% !important; height: 500px !important; }
+
+        .channel-info {
+            background: var(--card-bg);
+            padding: 15px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* تصنيفات القنوات - تابات */
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 10px; }
+        .tab-btn {
+            background: #222;
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.3s;
+        }
+        .tab-btn.active { background: var(--main-red); font-weight: bold; }
+
+        /* شبكة القنوات */
+        .channels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .chan-card {
+            background: var(--card-bg);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .chan-card:hover { border-color: var(--main-red); transform: translateY(-5px); background: #222; }
+        .chan-card i { font-size: 2rem; margin-bottom: 10px; color: var(--main-red); }
+        .chan-card span { display: block; font-size: 0.9rem; font-weight: bold; }
+
+        .quality-badge {
+            position: absolute; top: 5px; right: 5px; background: var(--gold);
+            color: #000; font-size: 0.6rem; padding: 2px 5px; border-radius: 3px; font-weight: bold;
+        }
+
+        /* جدول المباريات */
+        .match-list { margin-top: 40px; }
+        .match-box {
+            background: var(--card-bg);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-right: 4px solid var(--main-red);
+        }
+
+        @media (max-width: 768px) { .video-js { height: 250px !important; } }
     </style>
 </head>
 <body>
 
-<header>YALLA MATCH HD | يلا مباريات</header>
+    <header>
+        <div class="logo">يـلا مباريـات HD <span class="live-dot"></span></div>
+        <div style="font-size: 0.8rem; color: #aaa;">بث مباشر بدون تقطيع</div>
+    </header>
 
-<div class="container">
-    <div class="status" id="current-status">جاري التشغيل: قناة الجزيرة (تجريبية)</div>
-    
-    <div class="video-box">
-        <video id="main-player" class="video-js vjs-big-play-centered" controls preload="auto" width="900">
-            <source id="video-source" src="https://live-hls-web-ara.aljazeera.net/ar/apple/master.m3u8" type="application/x-mpegURL">
-        </video>
-    </div>
-
-    <h3 style="border-right: 4px solid #e50914; padding-right: 10px;">اختر القناة للمشاهدة:</h3>
-    
-    <div class="channels-list">
-        <div class="chan-btn active-chan" onclick="changeSource('الجزيرة الإخبارية', 'https://live-hls-web-ara.aljazeera.net/ar/apple/master.m3u8')">الجزيرة الرياضية (إخبارية)</div>
-        <div class="chan-btn" onclick="changeSource('Sky News', 'https://skynewsau-live.akamaized.net/hls/live/2002689/skynewsau-extra1/master.m3u8')">سكاي نيوز (تجريبية)</div>
+    <div class="container">
         
-        <div class="chan-btn" onclick="changeSource('beIN Sports 1', 'رابط_بي_ان_1_هنا')">beIN Sports 1</div>
-        <div class="chan-btn" onclick="changeSource('beIN Sports 2', 'رابط_بي_ان_2_هنا')">beIN Sports 2</div>
-        <div class="chan-btn" onclick="changeSource('SSC Sport', 'رابط_ssc_هنا')">SSC Sport</div>
+        <div class="video-section">
+            <div class="channel-info">
+                <span id="playing-name"><i class="fas fa-tv"></i> اختر قناة للبدء</span>
+                <span style="color: #4CAF50;"><i class="fas fa-signal"></i> متصل</span>
+            </div>
+            <video id="main-player" class="video-js vjs-big-play-centered" controls preload="auto" poster="https://img.freepik.com/free-photo/soccer-players-action-on-professional-stadium_1150-14442.jpg">
+                <source src="https://live-hls-web-ara.aljazeera.net/ar/apple/master.m3u8" type="application/x-mpegURL">
+            </video>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="filterChannels('all')">الكل</button>
+            <button class="tab-btn" onclick="filterChannels('bein')">باقة beIN</button>
+            <button class="tab-btn" onclick="filterChannels('ssc')">باقة SSC</button>
+            <button class="tab-btn" onclick="filterChannels('others')">قنوات أخرى</button>
+        </div>
+
+        <div class="channels-grid" id="channels-container">
+            <div class="chan-card" onclick="playChan('beIN Sports 1', 'رابط_بي_ان_1_هنا')">
+                <div class="quality-badge">4K</div>
+                <i class="fas fa-football-ball"></i>
+                <span>beIN Sports 1</span>
+            </div>
+
+            <div class="chan-card" onclick="playChan('beIN Sports 2', 'رابط_بي_ان_2_هنا')">
+                <div class="quality-badge">HD</div>
+                <i class="fas fa-football-ball"></i>
+                <span>beIN Sports 2</span>
+            </div>
+
+            <div class="chan-card" onclick="playChan('SSC Sport 1', 'رابط_ssc_1_هنا')">
+                <div class="quality-badge">FULL HD</div>
+                <i class="fas fa-trophy"></i>
+                <span>SSC Sport 1</span>
+            </div>
+
+            <div class="chan-card" onclick="playChan('الجزيرة الرياضية', 'https://live-hls-web-ara.aljazeera.net/ar/apple/master.m3u8')">
+                <div class="quality-badge">SD</div>
+                <i class="fas fa-broadcast-tower"></i>
+                <span>الجزيرة (فحص)</span>
+            </div>
+
+            </div>
+
+        <div class="match-list">
+            <h2 style="border-right: 4px solid var(--main-red); padding-right: 10px;">مباريات اليوم</h2>
+            <div class="match-box">
+                <span>ريال مدريد</span>
+                <span style="color: var(--main-red); font-weight: bold;">VS</span>
+                <span>ميلان</span>
+                <span style="color: #888;">10:00 م</span>
+            </div>
+        </div>
+
     </div>
-</div>
 
-<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-<script>
-    var player = videojs('main-player');
+    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+    <script>
+        var player = videojs('main-player');
 
-    function changeSource(name, url) {
-        if(url === 'رابط_بي_ان_1_هنا' || url === '') {
-            alert('يا بطل، لازم تحط رابط m3u8 شغال لهذه القناة داخل الكود!');
-            return;
+        function playChan(name, url) {
+            if(url.includes('رابط')) {
+                alert('يا بطل، هذا "رابط وهمي". لازم تجيب رابط m3u8 شغال من سيرفرات IPTV وتخليه بالكود.');
+                return;
+            }
+            player.src({ src: url, type: 'application/x-mpegURL' });
+            player.play();
+            document.getElementById('playing-name').innerHTML = '<i class="fas fa-play-circle"></i> أنت تشاهد الآن: ' + name;
         }
-        
-        // تغيير الرابط وتشغيل الفيديو
-        player.src({ src: url, type: 'application/x-mpegURL' });
-        player.play();
-        
-        // تحديث النص
-        document.getElementById('current-status').innerText = "جاري التشغيل: " + name;
-        
-        // تغيير شكل الأزرار
-        let btns = document.querySelectorAll('.chan-btn');
-        btns.forEach(btn => btn.classList.remove('active-chan'));
-        event.target.classList.add('active-chan');
-    }
-</script>
 
+        function filterChannels(category) {
+            // كود برمجي لتصفية القنوات حسب النوع (يمكنك تطويره لاحقاً)
+            console.log("تصفية: " + category);
+        }
+    </script>
 </body>
 </html>
