@@ -21,10 +21,10 @@ color:white;
 }
 
 header{
-background:black;
+background:#000;
 padding:15px;
 text-align:center;
-font-size:24px;
+font-size:26px;
 font-weight:bold;
 border-bottom:3px solid red;
 }
@@ -43,8 +43,8 @@ height:500px!important;
 .search{
 width:100%;
 padding:10px;
-border-radius:6px;
 border:none;
+border-radius:6px;
 margin-top:15px;
 font-family:Cairo;
 }
@@ -67,6 +67,25 @@ transition:0.3s;
 
 .channel:hover{
 background:#222;
+transform:scale(1.05);
+}
+
+.sport{
+background:#e50914;
+padding:3px 8px;
+border-radius:5px;
+font-size:12px;
+margin-top:5px;
+display:inline-block;
+}
+
+.match-box{
+background:#161616;
+padding:10px;
+border-radius:8px;
+margin-top:20px;
+display:flex;
+justify-content:space-between;
 }
 
 @media(max-width:768px){
@@ -84,7 +103,7 @@ height:250px!important;
 <body>
 
 <header>
-يلا مباريات HD
+⚽ يلا مباريات HD
 </header>
 
 <div class="container">
@@ -94,11 +113,20 @@ id="player"
 class="video-js"
 controls
 preload="auto"
-></video>
+poster="https://images.unsplash.com/photo-1508098682722-e99c43a406b2"
+>
+</video>
 
-<input id="search" class="search" placeholder="ابحث عن قناة">
+<input id="search" class="search" placeholder="ابحث عن قناة رياضية">
 
-<div id="channels" class="channels"></div>
+<div class="channels" id="channels"></div>
+
+<div class="match-box">
+<span>ريال مدريد</span>
+<span>VS</span>
+<span>برشلونة</span>
+<span>10:00 م</span>
+</div>
 
 </div>
 
@@ -108,36 +136,34 @@ preload="auto"
 
 const player = videojs('player');
 
-const m3uUrl = "https://iptv-org.github.io/iptv/index.m3u";
+const channels=[
 
-let channels = [];
+{
+name:"FIFA+",
+url:"https://aegis-cloudfront-1.tubi.video/fifa/playlist.m3u8"
+},
 
-fetch(m3uUrl)
-.then(res => res.text())
-.then(data => {
+{
+name:"RedBull TV Sports",
+url:"https://rbmn-live.akamaized.net/hls/live/590964/BoRB-TV/master.m3u8"
+},
 
-const lines = data.split("\n");
+{
+name:"Trace Sport Stars",
+url:"https://lightning-tracesport-samsungau.amagi.tv/playlist.m3u8"
+},
 
-for(let i=0;i<lines.length;i++){
+{
+name:"Edge Sport",
+url:"https://edgesport-rakuten.amagi.tv/playlist.m3u8"
+},
 
-if(lines[i].startsWith("#EXTINF")){
-
-let name = lines[i].split(",")[1];
-
-let url = lines[i+1];
-
-channels.push({
-name:name,
-url:url
-});
-
+{
+name:"Sport TV",
+url:"https://live-hls-web-aje.getaj.net/AJE/index.m3u8"
 }
 
-}
-
-showChannels(channels.slice(0,200));
-
-});
+];
 
 
 function showChannels(list){
@@ -152,13 +178,21 @@ const div=document.createElement("div");
 
 div.className="channel";
 
-div.innerText=ch.name;
+div.innerHTML=`
+
+⚽ ${ch.name}
+<br>
+<span class="sport">LIVE</span>
+
+`;
 
 div.onclick=function(){
 
 player.src({
+
 src:ch.url,
 type:"application/x-mpegURL"
+
 });
 
 player.play();
@@ -171,6 +205,8 @@ container.appendChild(div);
 
 }
 
+showChannels(channels);
+
 
 document.getElementById("search").addEventListener("input",function(){
 
@@ -178,7 +214,7 @@ let val=this.value.toLowerCase();
 
 let filtered=channels.filter(c=>c.name.toLowerCase().includes(val));
 
-showChannels(filtered.slice(0,200));
+showChannels(filtered);
 
 });
 
