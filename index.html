@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
 
 <meta charset="UTF-8">
@@ -14,16 +15,16 @@
 
 body{
 margin:0;
-font-family:Cairo;
 background:#0a0a0a;
 color:white;
+font-family:Cairo;
 }
 
 header{
 background:#000;
 padding:15px;
 text-align:center;
-font-size:26px;
+font-size:28px;
 border-bottom:3px solid red;
 }
 
@@ -40,7 +41,7 @@ height:450px!important;
 
 .channels{
 display:grid;
-grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
 gap:10px;
 margin-top:20px;
 }
@@ -57,7 +58,17 @@ text-align:center;
 background:#222;
 }
 
+.live{
+background:red;
+padding:3px 7px;
+font-size:12px;
+border-radius:4px;
+margin-top:6px;
+display:inline-block;
+}
+
 </style>
+
 </head>
 
 <body>
@@ -80,66 +91,55 @@ background:#222;
 
 const player = videojs('player');
 
-const playlist =
-"https://iptv-org.github.io/iptv/index.m3u";
+const channels=[
 
-let channels=[];
+{name:"العراقية",url:"https://www.youtube.com/embed/live_stream?channel=UCdFv0e2g6h5VqVaki3P6KyA"},
+{name:"العراقية الرياضية",url:"https://www.youtube.com/embed/live_stream?channel=UCYFqR2raXIiQunlslqY5T2A"},
+{name:"UTV",url:"https://www.youtube.com/embed/live_stream?channel=UCvK0M6D0oZX6mE6xPD58LlQ"},
+{name:"الشرقية",url:"https://www.youtube.com/embed/live_stream?channel=UCk2u0uS9KuX3sI5Yucs5cjQ"},
+{name:"الشرقية نيوز",url:"https://www.youtube.com/embed/live_stream?channel=UCtvvZ1tcHTfb3e8DqRL3OZw"},
+{name:"دجلة",url:"https://www.youtube.com/embed/live_stream?channel=UCVZ0uKbjDg-p09WXBJgp7ow"},
+{name:"السومرية",url:"https://www.youtube.com/embed/live_stream?channel=UC0sC1kYyqS-gtnznuaCG2qQ"},
+{name:"الرشيد",url:"https://www.youtube.com/embed/live_stream?channel=UCyqCCpt5TRTFJPjNenE2noA"},
+{name:"الفرات",url:"https://www.youtube.com/embed/live_stream?channel=UCn5Vf3L7hIwrKyYVJZZzK9w"},
+{name:"الرابعة",url:"https://www.youtube.com/embed/live_stream?channel=UC4U0Q3N8ignv4Y88MtXgFpA"},
+{name:"الاتجاه",url:"https://www.youtube.com/embed/live_stream?channel=UCt4bmPqhGV8eK3opgDdGztA"},
+{name:"العهد",url:"https://www.youtube.com/embed/live_stream?channel=UCcHGNy8JD7BqXc9Ejo4kKDg"},
+{name:"النجباء",url:"https://www.youtube.com/embed/live_stream?channel=UCm6yOD87mpy4VbQJu1WDVYQ"},
+{name:"بلادي",url:"https://www.youtube.com/embed/live_stream?channel=UCv8YgnPZXoqBYwygJyI072A"},
+{name:"بغداد",url:"https://www.youtube.com/embed/live_stream?channel=UC0B4ezgmO6ijLJrVN6a8GNw"},
+{name:"تركمانلي",url:"https://www.youtube.com/embed/live_stream?channel=UC6uHgnbZQzQpimeISFRCGDQ"},
+{name:"كردستان",url:"https://www.youtube.com/embed/live_stream?channel=UC4Y0NVnJyoSgGJE0E7E5WUw"},
+{name:"كردستان24",url:"https://www.youtube.com/embed/live_stream?channel=UCcHd9qYapqYh6gMPkTFogyA"},
+{name:"روداو",url:"https://www.youtube.com/embed/live_stream?channel=UCN7u0mGz0PqSxkbZVqhlVSA"},
+{name:"NRT",url:"https://www.youtube.com/embed/live_stream?channel=UC8N1sC3yRyvE4s46HoPazTA"}
 
-fetch(playlist)
-.then(res=>res.text())
-.then(data=>{
+];
 
-const lines=data.split("\n");
-
-for(let i=0;i<lines.length;i++){
-
-if(lines[i].startsWith("#EXTINF")){
-
-let name=lines[i].split(",")[1];
-let url=lines[i+1];
-
-if(
-name.toLowerCase().includes("iraq") ||
-name.includes("Iraqia") ||
-name.includes("UTV") ||
-name.includes("Sharqiya") ||
-name.includes("Dijlah")
-){
-
-channels.push({
-name:name,
-url:url
-});
-
-}
-
-}
-
-}
-
-showChannels(channels);
-
-});
-
-function showChannels(list){
+function showChannels(){
 
 const container=document.getElementById("channels");
 
-list.forEach(ch=>{
+channels.forEach(ch=>{
 
 let div=document.createElement("div");
 
 div.className="channel";
-div.textContent=ch.name;
+
+div.innerHTML=`
+${ch.name}
+<br>
+<span class="live">LIVE</span>
+`;
 
 div.onclick=function(){
 
 player.src({
 src:ch.url,
-type:"application/x-mpegURL"
+type:"video/youtube"
 });
 
-player.play();
+window.open(ch.url,"_blank");
 
 };
 
@@ -149,7 +149,10 @@ container.appendChild(div);
 
 }
 
+showChannels();
+
 </script>
 
 </body>
+
 </html>
