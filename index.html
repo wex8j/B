@@ -1,21 +1,17 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>يلا مباريات HD</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
 
 <style>
-
 body{
 margin:0;
-font-family:Cairo;
+font-family:'Cairo',sans-serif;
 background:#0a0a0a;
 color:white;
 }
@@ -24,8 +20,7 @@ header{
 background:#000;
 padding:15px;
 text-align:center;
-font-size:26px;
-font-weight:bold;
+font-size:24px;
 border-bottom:3px solid red;
 }
 
@@ -37,21 +32,12 @@ padding:20px;
 
 .video-js{
 width:100%!important;
-height:500px!important;
-}
-
-.search{
-width:100%;
-padding:10px;
-border:none;
-border-radius:6px;
-margin-top:15px;
-font-family:Cairo;
+height:450px!important;
 }
 
 .channels{
 display:grid;
-grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
 gap:10px;
 margin-top:20px;
 }
@@ -62,71 +48,37 @@ padding:15px;
 border-radius:8px;
 cursor:pointer;
 text-align:center;
-transition:0.3s;
 }
 
 .channel:hover{
 background:#222;
-transform:scale(1.05);
 }
 
-.sport{
-background:#e50914;
-padding:3px 8px;
-border-radius:5px;
-font-size:12px;
-margin-top:5px;
-display:inline-block;
-}
-
-.match-box{
-background:#161616;
+.search{
+width:100%;
 padding:10px;
-border-radius:8px;
-margin-top:20px;
-display:flex;
-justify-content:space-between;
+border-radius:6px;
+border:none;
+margin-top:15px;
 }
 
 @media(max-width:768px){
-
-.video-js{
-height:250px!important;
+.video-js{height:250px!important;}
 }
-
-}
-
 </style>
-
 </head>
 
 <body>
 
-<header>
-⚽ يلا مباريات HD
-</header>
+<header>⚽ يلا مباريات HD</header>
 
 <div class="container">
 
-<video
-id="player"
-class="video-js"
-controls
-preload="auto"
-poster="https://images.unsplash.com/photo-1508098682722-e99c43a406b2"
->
-</video>
+<video id="player" class="video-js" controls></video>
 
-<input id="search" class="search" placeholder="ابحث عن قناة رياضية">
+<input id="search" class="search" placeholder="ابحث عن قناة">
 
-<div class="channels" id="channels"></div>
-
-<div class="match-box">
-<span>ريال مدريد</span>
-<span>VS</span>
-<span>برشلونة</span>
-<span>10:00 م</span>
-</div>
+<div id="channels" class="channels"></div>
 
 </div>
 
@@ -136,63 +88,67 @@ poster="https://images.unsplash.com/photo-1508098682722-e99c43a406b2"
 
 const player = videojs('player');
 
-const channels=[
-
-{
-name:"FIFA+",
-url:"https://aegis-cloudfront-1.tubi.video/fifa/playlist.m3u8"
-},
-
-{
-name:"RedBull TV Sports",
-url:"https://rbmn-live.akamaized.net/hls/live/590964/BoRB-TV/master.m3u8"
-},
-
-{
-name:"Trace Sport Stars",
-url:"https://lightning-tracesport-samsungau.amagi.tv/playlist.m3u8"
-},
-
-{
-name:"Edge Sport",
-url:"https://edgesport-rakuten.amagi.tv/playlist.m3u8"
-},
-
-{
-name:"Sport TV",
-url:"https://live-hls-web-aje.getaj.net/AJE/index.m3u8"
-}
-
+/* قوائم IPTV متعددة */
+const playlists = [
+"https://iptv-org.github.io/iptv/categories/sports.m3u",
+"https://iptv-org.github.io/iptv/index.m3u"
 ];
 
+let channels = [];
+
+async function loadPlaylists(){
+
+for(let url of playlists){
+
+try{
+let res = await fetch(url);
+let text = await res.text();
+parseM3U(text);
+}catch(e){
+console.log("فشل تحميل قائمة:",url);
+}
+
+}
+
+showChannels(channels.slice(0,300));
+
+}
+
+function parseM3U(data){
+
+let lines = data.split("\n");
+
+for(let i=0;i<lines.length;i++){
+
+if(lines[i].startsWith("#EXTINF")){
+
+let name = lines[i].split(",")[1];
+let link = lines[i+1];
+
+channels.push({name:name,url:link});
+
+}
+
+}
+
+}
 
 function showChannels(list){
 
 const container=document.getElementById("channels");
-
 container.innerHTML="";
 
 list.forEach(ch=>{
 
-const div=document.createElement("div");
-
+let div=document.createElement("div");
 div.className="channel";
-
-div.innerHTML=`
-
-⚽ ${ch.name}
-<br>
-<span class="sport">LIVE</span>
-
-`;
+div.textContent=ch.name;
 
 div.onclick=function(){
 
 player.src({
-
 src:ch.url,
 type:"application/x-mpegURL"
-
 });
 
 player.play();
@@ -205,21 +161,17 @@ container.appendChild(div);
 
 }
 
-showChannels(channels);
-
-
 document.getElementById("search").addEventListener("input",function(){
 
 let val=this.value.toLowerCase();
-
 let filtered=channels.filter(c=>c.name.toLowerCase().includes(val));
 
-showChannels(filtered);
+showChannels(filtered.slice(0,300));
 
 });
 
+loadPlaylists();
+
 </script>
-
 </body>
-
 </html>
