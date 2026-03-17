@@ -1,158 +1,1051 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>⚽ يلا مباريات HD</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-<link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet">
-
+<title>يلا نشاهد HD — القنوات العراقية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.12/hls.min.js"></script>
 <style>
+  :root {
+    --bg-primary: #050810;
+    --bg-card: #0d1117;
+    --bg-card2: #111827;
+    --gold: #f5c842;
+    --gold2: #e8a020;
+    --accent: #ff6b35;
+    --blue: #1e90ff;
+    --green: #00e676;
+    --text: #e8eaf0;
+    --text-dim: #8892a4;
+    --border: #1e2535;
+    --player-bg: #000;
+    --radius: 14px;
+    --glow: 0 0 30px rgba(245,200,66,0.18);
+  }
 
-body{
-margin:0;
-background:#0a0a0a;
-color:white;
-font-family:Cairo;
-}
+  * { margin:0; padding:0; box-sizing:border-box; }
 
-header{
-background:#000;
-padding:15px;
-text-align:center;
-font-size:28px;
-border-bottom:3px solid red;
-}
+  body {
+    background: var(--bg-primary);
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-.container{
-max-width:1100px;
-margin:auto;
-padding:20px;
-}
+  /* Background mesh */
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(245,200,66,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 90%, rgba(30,144,255,0.05) 0%, transparent 50%);
+    pointer-events:none;
+    z-index:0;
+  }
 
-.video-js{
-width:100%!important;
-height:450px!important;
-}
+  /* ─── HEADER ─── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(5,8,16,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+  }
+  .header-inner {
+    max-width: 1400px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    gap: 16px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 0 20px rgba(245,200,66,0.4);
+  }
+  .logo-text {
+    font-size: 22px;
+    font-weight: 900;
+    background: linear-gradient(90deg, var(--gold), #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 300;
+    margin-top: -4px;
+  }
 
-.channels{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
-gap:10px;
-margin-top:20px;
-}
+  .search-bar {
+    flex: 1;
+    max-width: 340px;
+    display: flex;
+    align-items: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 8px 18px;
+    gap: 8px;
+    transition: border-color .2s;
+  }
+  .search-bar:focus-within { border-color: var(--gold); }
+  .search-bar input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    width: 100%;
+    text-align: right;
+  }
+  .search-bar input::placeholder { color: var(--text-dim); }
+  .search-bar svg { color: var(--text-dim); flex-shrink:0; }
 
-.channel{
-background:#161616;
-padding:15px;
-border-radius:8px;
-cursor:pointer;
-text-align:center;
-}
+  .hd-badge {
+    background: linear-gradient(135deg, #ff6b35, #ff3366);
+    padding: 5px 14px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    box-shadow: 0 0 16px rgba(255,107,53,0.4);
+  }
 
-.channel:hover{
-background:#222;
-}
+  /* ─── LAYOUT ─── */
+  .container {
+    max-width: 1400px;
+    margin: auto;
+    padding: 28px 24px;
+    position: relative;
+    z-index: 1;
+  }
 
-.live{
-background:red;
-padding:3px 7px;
-font-size:12px;
-border-radius:4px;
-margin-top:6px;
-display:inline-block;
-}
+  /* ─── PLAYER SECTION ─── */
+  .player-section {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 960px) {
+    .player-section { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+  }
 
+  .player-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .video-wrapper {
+    position: relative;
+    background: #000;
+    aspect-ratio: 16/9;
+  }
+  #mainPlayer {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    background: #000;
+  }
+  .player-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.6));
+    transition: opacity .3s;
+  }
+  .player-overlay.hidden { opacity: 0; pointer-events: none; }
+  .play-icon-big {
+    width: 80px; height: 80px;
+    background: rgba(245,200,66,0.9);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+    box-shadow: 0 0 40px rgba(245,200,66,0.5);
+  }
+  .play-icon-big:hover { transform: scale(1.1); }
+  .welcome-text {
+    margin-top: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+  }
+  .welcome-sub { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+
+  .player-info {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .now-playing-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+  .now-playing-sub { font-size: 12px; color: var(--text-dim); }
+
+  .quality-btns {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .q-btn {
+    padding: 4px 12px;
+    border-radius: 50px;
+    border: 1px solid var(--border);
+    background: var(--bg-card2);
+    color: var(--text-dim);
+    font-family: 'Cairo', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .q-btn:hover, .q-btn.active {
+    background: var(--gold);
+    color: #000;
+    border-color: var(--gold);
+    font-weight: 700;
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar-header {
+    padding: 14px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sidebar-list {
+    overflow-y: auto;
+    flex: 1;
+  }
+  .sidebar-list::-webkit-scrollbar { width: 4px; }
+  .sidebar-list::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(30,37,53,0.5);
+    transition: background .15s;
+  }
+  .sidebar-item:hover { background: var(--bg-card2); }
+  .sidebar-item.active { background: rgba(245,200,66,0.08); }
+  .sidebar-item.active .ch-name { color: var(--gold); }
+  .ch-logo-sm {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: var(--bg-card2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .ch-logo-sm img { width: 100%; height: 100%; object-fit: cover; }
+  .ch-name { font-size: 13px; font-weight: 600; }
+  .ch-cat { font-size: 11px; color: var(--text-dim); }
+  .live-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    margin-right: auto;
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; } 50% { opacity:.4; }
+  }
+
+  /* ─── CATEGORY TABS ─── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .section-title {
+    font-size: 20px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::before {
+    content:'';
+    width: 4px; height: 22px;
+    background: linear-gradient(to bottom, var(--gold), var(--gold2));
+    border-radius: 4px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 8px 20px;
+    border-radius: 50px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-dim);
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .2s;
+  }
+  .tab:hover { border-color: var(--gold); color: var(--gold); }
+  .tab.active {
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000;
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgba(245,200,66,0.3);
+  }
+
+  /* ─── CHANNELS GRID ─── */
+  .channels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+  }
+
+  .ch-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform .2s, border-color .2s, box-shadow .2s;
+    position: relative;
+  }
+  .ch-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold);
+    box-shadow: 0 8px 30px rgba(245,200,66,0.15);
+  }
+  .ch-card.active {
+    border-color: var(--gold);
+    box-shadow: var(--glow);
+  }
+  .ch-card-thumb {
+    aspect-ratio: 16/9;
+    background: linear-gradient(135deg, #0d1117, #1a2030);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 38px;
+    position: relative;
+    overflow: hidden;
+  }
+  .ch-card-thumb img {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+  }
+  .ch-card-thumb::after {
+    content:'';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(5,8,16,0.8) 0%, transparent 50%);
+  }
+  .ch-card-play {
+    position: absolute;
+    inset: 0;
+    background: rgba(245,200,66,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity .2s;
+    z-index: 2;
+  }
+  .ch-card:hover .ch-card-play { opacity: 1; }
+  .ch-card-play svg { width: 42px; height: 42px; color: var(--gold); filter: drop-shadow(0 0 12px var(--gold)); }
+
+  .ch-card-body {
+    padding: 10px 12px;
+  }
+  .ch-card-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .ch-card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .ch-card-cat {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .ch-card-quality {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(245,200,66,0.15);
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  .live-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255,30,30,0.9);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 3;
+    letter-spacing: 0.5px;
+  }
+  .live-badge::before {
+    content:'';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #fff;
+    animation: pulse 1.5s infinite;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    display: none;
+  }
+  .spinner.show { display: flex; }
+  .spin-ring {
+    width: 48px; height: 48px;
+    border: 3px solid rgba(245,200,66,0.2);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Error message */
+  .error-msg {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 11;
+    display: none;
+    gap: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+  .error-msg.show { display: flex; }
+  .error-msg .err-icon { font-size: 40px; }
+  .error-msg p { font-size: 13px; color: var(--text-dim); max-width: 260px; }
+  .retry-btn {
+    padding: 8px 24px;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 12px;
+    margin-top: 40px;
+    position: relative;
+    z-index: 1;
+  }
+  footer span { color: var(--gold); }
+
+  /* Hidden */
+  .hidden-ch { display: none !important; }
+
+  /* Notification toast */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--bg-card2);
+    border: 1px solid var(--gold);
+    color: var(--text);
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 9999;
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+    white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
 </style>
-
 </head>
-
 <body>
 
+<!-- HEADER -->
 <header>
-⚽ يلا مباريات HD
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">📺</div>
+      <div>
+        <div class="logo-text">يلا نشاهد</div>
+        <div class="logo-sub">القنوات العراقية مباشرة</div>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="ابحث عن قناة...">
+    </div>
+
+    <div class="hd-badge">🔴 LIVE HD</div>
+  </div>
 </header>
 
+<!-- MAIN -->
 <div class="container">
 
-<video id="player" class="video-js" controls></video>
+  <!-- PLAYER + SIDEBAR -->
+  <div class="player-section">
+    <div class="player-card">
+      <div class="video-wrapper">
+        <video id="mainPlayer" controls playsinline></video>
+        <div class="player-overlay" id="playerOverlay">
+          <div class="play-icon-big">▶</div>
+          <div class="welcome-text">اختر قناة للمشاهدة</div>
+          <div class="welcome-sub">اختر أي قناة من القائمة أدناه</div>
+        </div>
+        <div class="spinner" id="loadingSpinner"><div class="spin-ring"></div></div>
+        <div class="error-msg" id="errorMsg">
+          <div class="err-icon">📡</div>
+          <p>تعذّر تشغيل القناة — قد تكون غير متاحة حالياً أو تحتاج إلى VPN</p>
+          <button class="retry-btn" onclick="retryStream()">🔄 إعادة المحاولة</button>
+        </div>
+      </div>
+      <div class="player-info">
+        <div>
+          <div class="now-playing-name" id="nowPlayingName">لم يتم تحديد قناة</div>
+          <div class="now-playing-sub" id="nowPlayingCat">اختر قناة من القائمة</div>
+        </div>
+        <div class="quality-btns" id="qualityBtns">
+          <button class="q-btn active" onclick="switchQuality('auto')">AUTO</button>
+          <button class="q-btn" onclick="switchQuality('hd')">HD</button>
+          <button class="q-btn" onclick="switchQuality('sd')">SD</button>
+        </div>
+      </div>
+    </div>
 
-<div id="channels" class="channels"></div>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-header">📋 قائمة القنوات السريعة</div>
+      <div class="sidebar-list" id="sidebarList"></div>
+    </div>
+  </div>
 
+  <!-- CHANNELS GRID -->
+  <div>
+    <div class="section-header">
+      <div class="section-title">جميع القنوات العراقية</div>
+    </div>
+
+    <div class="tabs" id="tabsContainer">
+      <button class="tab active" data-cat="all" onclick="filterCat('all', this)">🌐 الكل</button>
+      <button class="tab" data-cat="عامة" onclick="filterCat('عامة', this)">📺 عامة</button>
+      <button class="tab" data-cat="رياضية" onclick="filterCat('رياضية', this)">⚽ رياضية</button>
+      <button class="tab" data-cat="إخبارية" onclick="filterCat('إخبارية', this)">📰 إخبارية</button>
+      <button class="tab" data-cat="دينية" onclick="filterCat('دينية', this)">🕌 دينية</button>
+      <button class="tab" data-cat="كردية" onclick="filterCat('كردية', this)">🏔️ كردية</button>
+      <button class="tab" data-cat="محلية" onclick="filterCat('محلية', this)">🏙️ محلية</button>
+    </div>
+
+    <div class="channels-grid" id="channelsGrid"></div>
+  </div>
 </div>
 
-<script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+<!-- FOOTER -->
+<footer>
+  صُنع بـ❤️ لمتابعي القنوات العراقية &nbsp;|&nbsp; <span>يلا نشاهد HD</span> &nbsp;|&nbsp; جميع القنوات مباشرة
+</footer>
+
+<!-- TOAST -->
+<div id="toast"></div>
 
 <script>
-
-const player = videojs('player');
-
-const channels=[
-
-{name:"العراقية",url:"https://www.youtube.com/embed/live_stream?channel=UCdFv0e2g6h5VqVaki3P6KyA"},
-{name:"العراقية الرياضية",url:"https://www.youtube.com/embed/live_stream?channel=UCYFqR2raXIiQunlslqY5T2A"},
-{name:"UTV",url:"https://www.youtube.com/embed/live_stream?channel=UCvK0M6D0oZX6mE6xPD58LlQ"},
-{name:"الشرقية",url:"https://www.youtube.com/embed/live_stream?channel=UCk2u0uS9KuX3sI5Yucs5cjQ"},
-{name:"الشرقية نيوز",url:"https://www.youtube.com/embed/live_stream?channel=UCtvvZ1tcHTfb3e8DqRL3OZw"},
-{name:"دجلة",url:"https://www.youtube.com/embed/live_stream?channel=UCVZ0uKbjDg-p09WXBJgp7ow"},
-{name:"السومرية",url:"https://www.youtube.com/embed/live_stream?channel=UC0sC1kYyqS-gtnznuaCG2qQ"},
-{name:"الرشيد",url:"https://www.youtube.com/embed/live_stream?channel=UCyqCCpt5TRTFJPjNenE2noA"},
-{name:"الفرات",url:"https://www.youtube.com/embed/live_stream?channel=UCn5Vf3L7hIwrKyYVJZZzK9w"},
-{name:"الرابعة",url:"https://www.youtube.com/embed/live_stream?channel=UC4U0Q3N8ignv4Y88MtXgFpA"},
-{name:"الاتجاه",url:"https://www.youtube.com/embed/live_stream?channel=UCt4bmPqhGV8eK3opgDdGztA"},
-{name:"العهد",url:"https://www.youtube.com/embed/live_stream?channel=UCcHGNy8JD7BqXc9Ejo4kKDg"},
-{name:"النجباء",url:"https://www.youtube.com/embed/live_stream?channel=UCm6yOD87mpy4VbQJu1WDVYQ"},
-{name:"بلادي",url:"https://www.youtube.com/embed/live_stream?channel=UCv8YgnPZXoqBYwygJyI072A"},
-{name:"بغداد",url:"https://www.youtube.com/embed/live_stream?channel=UC0B4ezgmO6ijLJrVN6a8GNw"},
-{name:"تركمانلي",url:"https://www.youtube.com/embed/live_stream?channel=UC6uHgnbZQzQpimeISFRCGDQ"},
-{name:"كردستان",url:"https://www.youtube.com/embed/live_stream?channel=UC4Y0NVnJyoSgGJE0E7E5WUw"},
-{name:"كردستان24",url:"https://www.youtube.com/embed/live_stream?channel=UCcHd9qYapqYh6gMPkTFogyA"},
-{name:"روداو",url:"https://www.youtube.com/embed/live_stream?channel=UCN7u0mGz0PqSxkbZVqhlVSA"},
-{name:"NRT",url:"https://www.youtube.com/embed/live_stream?channel=UC8N1sC3yRyvE4s46HoPazTA"}
-
+// ─── CHANNELS DATA ───
+const CHANNELS = [
+  // ─ عامة ─
+  {
+    id: 1, name: 'العراقية العامة', nameEn: 'Al-Iraqiya', cat: 'عامة', emoji: '🇮🇶', quality: 'HD',
+    streams: {
+      auto: 'https://edge1.cdn.arabsstream.pro/play/IraqiyaTV/index.m3u8',
+      hd:   'https://edge1.cdn.arabsstream.pro/play/IraqiyaTV/index.m3u8',
+      sd:   'https://edge1.cdn.arabsstream.pro/play/IraqiyaTV/index.m3u8'
+    }
+  },
+  {
+    id: 2, name: 'العراقية الرياضية', nameEn: 'Al-Iraqiya Sports', cat: 'رياضية', emoji: '⚽', quality: 'HD',
+    streams: {
+      auto: 'https://edge1.cdn.arabsstream.pro/play/IraqiyaSports/index.m3u8',
+      hd:   'https://edge1.cdn.arabsstream.pro/play/IraqiyaSports/index.m3u8',
+      sd:   'https://edge1.cdn.arabsstream.pro/play/IraqiyaSports/index.m3u8'
+    }
+  },
+  {
+    id: 3, name: 'الشرقية', nameEn: 'Al-Sharqiya', cat: 'عامة', emoji: '🌅', quality: 'HD',
+    streams: {
+      auto: 'https://live.alsharqiya.com/live/stream.m3u8',
+      hd:   'https://live.alsharqiya.com/live/stream.m3u8',
+      sd:   'https://live.alsharqiya.com/live/stream.m3u8'
+    }
+  },
+  {
+    id: 4, name: 'الشرقية نيوز', nameEn: 'Al-Sharqiya News', cat: 'إخبارية', emoji: '📰', quality: 'HD',
+    streams: {
+      auto: 'https://live.alsharqiya.com/live/news.m3u8',
+      hd:   'https://live.alsharqiya.com/live/news.m3u8',
+      sd:   'https://live.alsharqiya.com/live/news.m3u8'
+    }
+  },
+  {
+    id: 5, name: 'السومرية', nameEn: 'Sumaria TV', cat: 'عامة', emoji: '🏛️', quality: 'HD',
+    streams: {
+      auto: 'https://livestream.sumariatv.com/live/smstream/playlist.m3u8',
+      hd:   'https://livestream.sumariatv.com/live/smstream/playlist.m3u8',
+      sd:   'https://livestream.sumariatv.com/live/smstream/playlist.m3u8'
+    }
+  },
+  {
+    id: 6, name: 'السومرية نيوز', nameEn: 'Sumaria News', cat: 'إخبارية', emoji: '📡', quality: 'HD',
+    streams: {
+      auto: 'https://livestream.sumariatv.com/live/news/playlist.m3u8',
+      hd:   'https://livestream.sumariatv.com/live/news/playlist.m3u8',
+      sd:   'https://livestream.sumariatv.com/live/news/playlist.m3u8'
+    }
+  },
+  {
+    id: 7, name: 'دجلة', nameEn: 'Dijlah TV', cat: 'عامة', emoji: '🌊', quality: 'HD',
+    streams: {
+      auto: 'https://live.dijlah.tv/live/dijlah/index.m3u8',
+      hd:   'https://live.dijlah.tv/live/dijlah/index.m3u8',
+      sd:   'https://live.dijlah.tv/live/dijlah/index.m3u8'
+    }
+  },
+  {
+    id: 8, name: 'آفاق', nameEn: 'Afaq TV', cat: 'عامة', emoji: '🌄', quality: 'HD',
+    streams: {
+      auto: 'https://live.afaqtv.net/live/afaq/index.m3u8',
+      hd:   'https://live.afaqtv.net/live/afaq/index.m3u8',
+      sd:   'https://live.afaqtv.net/live/afaq/index.m3u8'
+    }
+  },
+  {
+    id: 9, name: 'الرشيد', nameEn: 'Al-Rasheed TV', cat: 'عامة', emoji: '🏰', quality: 'SD',
+    streams: {
+      auto: 'https://edge.cdn.arabsstream.pro/play/AlRasheedTV/index.m3u8',
+      hd:   'https://edge.cdn.arabsstream.pro/play/AlRasheedTV/index.m3u8',
+      sd:   'https://edge.cdn.arabsstream.pro/play/AlRasheedTV/index.m3u8'
+    }
+  },
+  {
+    id: 10, name: 'الفرات', nameEn: 'Al-Forat TV', cat: 'دينية', emoji: '🕊️', quality: 'HD',
+    streams: {
+      auto: 'https://live.alforaatv.net/live/alforaat/playlist.m3u8',
+      hd:   'https://live.alforaatv.net/live/alforaat/playlist.m3u8',
+      sd:   'https://live.alforaatv.net/live/alforaat/playlist.m3u8'
+    }
+  },
+  {
+    id: 11, name: 'بلدي', nameEn: 'Beladi TV', cat: 'محلية', emoji: '🏡', quality: 'SD',
+    streams: {
+      auto: 'https://live.beladytv.net/live/belady/index.m3u8',
+      hd:   'https://live.beladytv.net/live/belady/index.m3u8',
+      sd:   'https://live.beladytv.net/live/belady/index.m3u8'
+    }
+  },
+  {
+    id: 12, name: 'كربلاء', nameEn: 'Karbala TV', cat: 'دينية', emoji: '🕌', quality: 'HD',
+    streams: {
+      auto: 'https://live.karbalatv.net/live/karbala/playlist.m3u8',
+      hd:   'https://live.karbalatv.net/live/karbala/playlist.m3u8',
+      sd:   'https://live.karbalatv.net/live/karbala/playlist.m3u8'
+    }
+  },
+  {
+    id: 13, name: 'أهل البيت', nameEn: 'Ahlulbayt TV', cat: 'دينية', emoji: '☪️', quality: 'HD',
+    streams: {
+      auto: 'https://cdn.ahlulbayttv.net/live/ahlulbayt/index.m3u8',
+      hd:   'https://cdn.ahlulbayttv.net/live/ahlulbayt/index.m3u8',
+      sd:   'https://cdn.ahlulbayttv.net/live/ahlulbayt/index.m3u8'
+    }
+  },
+  {
+    id: 14, name: 'الأنبار', nameEn: 'Anbar TV', cat: 'محلية', emoji: '🏜️', quality: 'SD',
+    streams: {
+      auto: 'https://live.anbartv.net/live/anbar/index.m3u8',
+      hd:   'https://live.anbartv.net/live/anbar/index.m3u8',
+      sd:   'https://live.anbartv.net/live/anbar/index.m3u8'
+    }
+  },
+  {
+    id: 15, name: 'كردستان', nameEn: 'Kurdistan TV', cat: 'كردية', emoji: '🏔️', quality: 'HD',
+    streams: {
+      auto: 'https://live.kurdistantv.net/live/ktv/index.m3u8',
+      hd:   'https://live.kurdistantv.net/live/ktv/index.m3u8',
+      sd:   'https://live.kurdistantv.net/live/ktv/index.m3u8'
+    }
+  },
+  {
+    id: 16, name: 'روداو', nameEn: 'Rudaw TV', cat: 'كردية', emoji: '📺', quality: 'HD',
+    streams: {
+      auto: 'https://live.rudaw.net/hls/rudawhd/index.m3u8',
+      hd:   'https://live.rudaw.net/hls/rudawhd/index.m3u8',
+      sd:   'https://live.rudaw.net/hls/rudawsd/index.m3u8'
+    }
+  },
+  {
+    id: 17, name: 'كردستان 24', nameEn: 'Kurdistan 24', cat: 'كردية', emoji: '🌐', quality: 'HD',
+    streams: {
+      auto: 'https://live.kurdistan24.net/live/k24/index.m3u8',
+      hd:   'https://live.kurdistan24.net/live/k24/index.m3u8',
+      sd:   'https://live.kurdistan24.net/live/k24/index.m3u8'
+    }
+  },
+  {
+    id: 18, name: 'NRT', nameEn: 'NRT Kurdistan', cat: 'كردية', emoji: '🎙️', quality: 'HD',
+    streams: {
+      auto: 'https://live.nrttv.com/live/nrt/index.m3u8',
+      hd:   'https://live.nrttv.com/live/nrt/index.m3u8',
+      sd:   'https://live.nrttv.com/live/nrt/index.m3u8'
+    }
+  },
+  {
+    id: 19, name: 'GK TV', nameEn: 'GK TV Kurdistan', cat: 'كردية', emoji: '📻', quality: 'SD',
+    streams: {
+      auto: 'https://live.gktvkurdistan.com/live/gktv/index.m3u8',
+      hd:   'https://live.gktvkurdistan.com/live/gktv/index.m3u8',
+      sd:   'https://live.gktvkurdistan.com/live/gktv/index.m3u8'
+    }
+  },
+  {
+    id: 20, name: 'الحرة عراق', nameEn: 'Alhurra Iraq', cat: 'إخبارية', emoji: '🗽', quality: 'HD',
+    streams: {
+      auto: 'https://mnalive.akamaized.net/mnntv/mnn10live/playlist.m3u8',
+      hd:   'https://mnalive.akamaized.net/mnntv/mnn10live/playlist.m3u8',
+      sd:   'https://mnalive.akamaized.net/mnntv/mnn10live/playlist.m3u8'
+    }
+  },
+  {
+    id: 21, name: 'IMN الإعلامية', nameEn: 'IMN Iraq', cat: 'إخبارية', emoji: '📡', quality: 'HD',
+    streams: {
+      auto: 'https://edge.cdn.arabsstream.pro/play/IMNIraq/index.m3u8',
+      hd:   'https://edge.cdn.arabsstream.pro/play/IMNIraq/index.m3u8',
+      sd:   'https://edge.cdn.arabsstream.pro/play/IMNIraq/index.m3u8'
+    }
+  },
+  {
+    id: 22, name: 'النجباء', nameEn: 'Al-Nujaba TV', cat: 'دينية', emoji: '⭐', quality: 'HD',
+    streams: {
+      auto: 'https://live.nujabasat.tv/live/nujaba/index.m3u8',
+      hd:   'https://live.nujabasat.tv/live/nujaba/index.m3u8',
+      sd:   'https://live.nujabasat.tv/live/nujaba/index.m3u8'
+    }
+  },
+  {
+    id: 23, name: 'الكوثر', nameEn: 'Al-Kawthar TV', cat: 'دينية', emoji: '🌙', quality: 'HD',
+    streams: {
+      auto: 'https://live.alkawthar.tv/live/alkawthar/index.m3u8',
+      hd:   'https://live.alkawthar.tv/live/alkawthar/index.m3u8',
+      sd:   'https://live.alkawthar.tv/live/alkawthar/index.m3u8'
+    }
+  },
+  {
+    id: 24, name: 'بغداد اليوم', nameEn: 'Baghdad Today', cat: 'محلية', emoji: '🏙️', quality: 'HD',
+    streams: {
+      auto: 'https://live.baghdadtoday.news/live/bt/index.m3u8',
+      hd:   'https://live.baghdadtoday.news/live/bt/index.m3u8',
+      sd:   'https://live.baghdadtoday.news/live/bt/index.m3u8'
+    }
+  },
+  {
+    id: 25, name: 'الميادين', nameEn: 'Al-Mayadeen', cat: 'إخبارية', emoji: '🌍', quality: 'HD',
+    streams: {
+      auto: 'https://bcovlive-a.akamaihd.net/ca570d7f7f114bbebcb2b06c1e76aa76/eu-central-1/5324057878001/profile_0/chunklist.m3u8',
+      hd:   'https://bcovlive-a.akamaihd.net/ca570d7f7f114bbebcb2b06c1e76aa76/eu-central-1/5324057878001/profile_0/chunklist.m3u8',
+      sd:   'https://bcovlive-a.akamaihd.net/ca570d7f7f114bbebcb2b06c1e76aa76/eu-central-1/5324057878001/profile_1/chunklist.m3u8'
+    }
+  },
+  {
+    id: 26, name: 'العالم', nameEn: 'Alam TV', cat: 'إخبارية', emoji: '🌐', quality: 'HD',
+    streams: {
+      auto: 'https://live.alarab.tv/live/alarab/index.m3u8',
+      hd:   'https://live.alarab.tv/live/alarab/index.m3u8',
+      sd:   'https://live.alarab.tv/live/alarab/index.m3u8'
+    }
+  },
+  {
+    id: 27, name: 'العربية', nameEn: 'Al-Arabiya', cat: 'إخبارية', emoji: '📺', quality: 'HD',
+    streams: {
+      auto: 'https://vm.cdn.arabsstream.pro/play/AlArabiya/index.m3u8',
+      hd:   'https://vm.cdn.arabsstream.pro/play/AlArabiya/index.m3u8',
+      sd:   'https://vm.cdn.arabsstream.pro/play/AlArabiya/index.m3u8'
+    }
+  },
+  {
+    id: 28, name: 'الجزيرة', nameEn: 'Al-Jazeera', cat: 'إخبارية', emoji: '🎙️', quality: 'HD',
+    streams: {
+      auto: 'https://live-hls-web-aje.getaj.net/AJE/index.m3u8',
+      hd:   'https://live-hls-web-aje.getaj.net/AJE/index.m3u8',
+      sd:   'https://live-hls-web-aje.getaj.net/AJE/index.m3u8'
+    }
+  }
 ];
 
-function showChannels(){
+// ─── STATE ───
+let currentChannel = null;
+let currentQuality = 'auto';
+let hlsInstance = null;
 
-const container=document.getElementById("channels");
-
-channels.forEach(ch=>{
-
-let div=document.createElement("div");
-
-div.className="channel";
-
-div.innerHTML=`
-${ch.name}
-<br>
-<span class="live">LIVE</span>
-`;
-
-div.onclick=function(){
-
-player.src({
-src:ch.url,
-type:"video/youtube"
-});
-
-window.open(ch.url,"_blank");
-
-};
-
-container.appendChild(div);
-
-});
-
+// ─── RENDER ───
+function renderChannels(list) {
+  const grid = document.getElementById('channelsGrid');
+  grid.innerHTML = '';
+  list.forEach(ch => {
+    const card = document.createElement('div');
+    card.className = 'ch-card' + (currentChannel && currentChannel.id === ch.id ? ' active' : '');
+    card.id = 'card-' + ch.id;
+    card.onclick = () => playChannel(ch);
+    card.innerHTML = `
+      <div class="ch-card-thumb">
+        <div style="font-size:44px;z-index:1;position:relative">${ch.emoji}</div>
+        <div class="ch-card-play">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+        <div class="live-badge">LIVE</div>
+      </div>
+      <div class="ch-card-body">
+        <div class="ch-card-name">${ch.name}</div>
+        <div class="ch-card-meta">
+          <span class="ch-card-cat">${ch.cat}</span>
+          <span class="ch-card-quality">${ch.quality}</span>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
 }
 
-showChannels();
+function renderSidebar() {
+  const list = document.getElementById('sidebarList');
+  list.innerHTML = '';
+  CHANNELS.forEach(ch => {
+    const item = document.createElement('div');
+    item.className = 'sidebar-item' + (currentChannel && currentChannel.id === ch.id ? ' active' : '');
+    item.id = 'sidebar-' + ch.id;
+    item.onclick = () => playChannel(ch);
+    item.innerHTML = `
+      <div class="ch-logo-sm">${ch.emoji}</div>
+      <div>
+        <div class="ch-name">${ch.name}</div>
+        <div class="ch-cat">${ch.cat}</div>
+      </div>
+      <div class="live-dot"></div>
+    `;
+    list.appendChild(item);
+  });
+}
 
+// ─── PLAY ───
+function playChannel(ch) {
+  currentChannel = ch;
+  currentQuality = 'auto';
+
+  // Update UI
+  document.getElementById('nowPlayingName').textContent = ch.name + ' — ' + ch.nameEn;
+  document.getElementById('nowPlayingCat').textContent = ch.cat + ' • بث مباشر';
+  document.getElementById('playerOverlay').classList.add('hidden');
+  document.getElementById('errorMsg').classList.remove('show');
+
+  // Highlight active cards
+  document.querySelectorAll('.ch-card').forEach(c => c.classList.remove('active'));
+  const activeCard = document.getElementById('card-' + ch.id);
+  if (activeCard) { activeCard.classList.add('active'); activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  document.querySelectorAll('.sidebar-item').forEach(c => c.classList.remove('active'));
+  const activeSidebar = document.getElementById('sidebar-' + ch.id);
+  if (activeSidebar) activeSidebar.classList.add('active');
+
+  // Quality buttons
+  document.querySelectorAll('.q-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.q-btn').classList.add('active');
+
+  loadStream(ch.streams[currentQuality]);
+  showToast('▶ ' + ch.name);
+}
+
+function loadStream(url) {
+  const video = document.getElementById('mainPlayer');
+  const spinner = document.getElementById('loadingSpinner');
+  const err = document.getElementById('errorMsg');
+
+  spinner.classList.add('show');
+  err.classList.remove('show');
+
+  if (hlsInstance) { hlsInstance.destroy(); hlsInstance = null; }
+
+  if (Hls.isSupported()) {
+    hlsInstance = new Hls({
+      enableWorker: true,
+      lowLatencyMode: true,
+      xhrSetup: function(xhr) {
+        xhr.timeout = 15000;
+      }
+    });
+    hlsInstance.loadSource(url);
+    hlsInstance.attachMedia(video);
+    hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+      spinner.classList.remove('show');
+      video.play().catch(() => {});
+    });
+    hlsInstance.on(Hls.Events.ERROR, (e, data) => {
+      if (data.fatal) {
+        spinner.classList.remove('show');
+        err.classList.add('show');
+      }
+    });
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = url;
+    video.addEventListener('loadedmetadata', () => {
+      spinner.classList.remove('show');
+      video.play().catch(() => {});
+    }, { once: true });
+    video.addEventListener('error', () => {
+      spinner.classList.remove('show');
+      err.classList.add('show');
+    }, { once: true });
+  } else {
+    spinner.classList.remove('show');
+    video.src = url;
+    video.play().catch(() => err.classList.add('show'));
+  }
+}
+
+function switchQuality(q) {
+  if (!currentChannel) return;
+  currentQuality = q;
+  document.querySelectorAll('.q-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  loadStream(currentChannel.streams[q]);
+  showToast('الجودة: ' + q.toUpperCase());
+}
+
+function retryStream() {
+  if (currentChannel) loadStream(currentChannel.streams[currentQuality]);
+}
+
+// ─── FILTER / SEARCH ───
+let activeFilter = 'all';
+
+function filterCat(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilter();
+}
+
+function applyFilter() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const filtered = CHANNELS.filter(ch => {
+    const matchCat = activeFilter === 'all' || ch.cat === activeFilter;
+    const matchSearch = !q || ch.name.includes(q) || ch.nameEn.toLowerCase().includes(q) || ch.cat.includes(q);
+    return matchCat && matchSearch;
+  });
+  renderChannels(filtered);
+}
+
+document.getElementById('searchInput').addEventListener('input', applyFilter);
+
+// ─── TOAST ───
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ─── INIT ───
+renderChannels(CHANNELS);
+renderSidebar();
 </script>
-
 </body>
-
 </html>
