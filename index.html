@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
 
 <meta charset="UTF-8">
@@ -39,18 +38,10 @@ width:100%!important;
 height:450px!important;
 }
 
-.search{
-width:100%;
-padding:10px;
-border-radius:6px;
-border:none;
-margin-top:15px;
-}
-
 .channels{
 display:grid;
 grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
-gap:12px;
+gap:10px;
 margin-top:20px;
 }
 
@@ -66,23 +57,7 @@ text-align:center;
 background:#222;
 }
 
-.live{
-background:red;
-padding:3px 8px;
-border-radius:5px;
-font-size:12px;
-display:inline-block;
-margin-top:5px;
-}
-
-@media(max-width:768px){
-.video-js{
-height:250px!important;
-}
-}
-
 </style>
-
 </head>
 
 <body>
@@ -95,8 +70,6 @@ height:250px!important;
 
 <video id="player" class="video-js" controls></video>
 
-<input id="search" class="search" placeholder="ابحث عن قناة">
-
 <div id="channels" class="channels"></div>
 
 </div>
@@ -107,49 +80,57 @@ height:250px!important;
 
 const player = videojs('player');
 
-const channels=[
+const playlist =
+"https://iptv-org.github.io/iptv/index.m3u";
 
-{ name:"⚽ العراقية الرياضية", url:"https://cdn.iqstv.net/hls/iraqia_sport.m3u8" },
+let channels=[];
 
-{ name:"🇮🇶 العراقية", url:"https://cdn.iqstv.net/hls/aliraqia.m3u8" },
+fetch(playlist)
+.then(res=>res.text())
+.then(data=>{
 
-{ name:"🇮🇶 MBC العراق", url:"https://shls-mbciraq-prod-dub.shahid.net/out/v1/mbciraq.m3u8" },
+const lines=data.split("\n");
 
-{ name:"🇮🇶 الشرقية", url:"https://shls-live-enc.edgenextcdn.net/out/v1/04c3e2cfdcbf4b33b84f4f5d3c3c7d9e/index.m3u8" },
+for(let i=0;i<lines.length;i++){
 
-{ name:"🇮🇶 الشرقية نيوز", url:"https://shls-live-enc.edgenextcdn.net/out/v1/1d44a3f0e2e64e68a2d66a6c6d47c2de/index.m3u8" },
+if(lines[i].startsWith("#EXTINF")){
 
-{ name:"🇮🇶 دجلة", url:"https://ghaasiflu.online/Dijlah/index.m3u8" },
+let name=lines[i].split(",")[1];
+let url=lines[i+1];
 
-{ name:"🇮🇶 UTV", url:"https://live.utv.iq/hls/utv.m3u8" },
+if(
+name.toLowerCase().includes("iraq") ||
+name.includes("Iraqia") ||
+name.includes("UTV") ||
+name.includes("Sharqiya") ||
+name.includes("Dijlah")
+){
 
-{ name:"🇮🇶 الرشيد", url:"https://media1.livaat.com/ALRasheed/index.m3u8" },
+channels.push({
+name:name,
+url:url
+});
 
-{ name:"🇮🇶 السومرية", url:"https://live.alsumaria.tv/hls/alsumaria.m3u8" },
+}
 
-{ name:"🇮🇶 الفرات", url:"https://live.alforatnews.com/hls/alforat.m3u8" }
+}
 
-];
+}
+
+showChannels(channels);
+
+});
 
 function showChannels(list){
 
 const container=document.getElementById("channels");
 
-container.innerHTML="";
-
 list.forEach(ch=>{
 
-const div=document.createElement("div");
+let div=document.createElement("div");
 
 div.className="channel";
-
-div.innerHTML=`
-
-${ch.name}
-<br>
-<span class="live">LIVE</span>
-
-`;
+div.textContent=ch.name;
 
 div.onclick=function(){
 
@@ -168,20 +149,7 @@ container.appendChild(div);
 
 }
 
-showChannels(channels);
-
-document.getElementById("search").addEventListener("input",function(){
-
-let val=this.value.toLowerCase();
-
-let filtered=channels.filter(c=>c.name.toLowerCase().includes(val));
-
-showChannels(filtered);
-
-});
-
 </script>
 
 </body>
-
 </html>
