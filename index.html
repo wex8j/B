@@ -15,17 +15,16 @@
 
 body{
 margin:0;
-font-family:Cairo;
+font-family:'Cairo',sans-serif;
 background:#0a0a0a;
 color:white;
 }
 
 header{
-background:#000;
+background:black;
 padding:15px;
 text-align:center;
 font-size:26px;
-font-weight:bold;
 border-bottom:3px solid red;
 }
 
@@ -37,16 +36,15 @@ padding:20px;
 
 .video-js{
 width:100%!important;
-height:480px!important;
+height:450px!important;
 }
 
 .search{
 width:100%;
 padding:10px;
+margin-top:15px;
 border-radius:6px;
 border:none;
-margin-top:15px;
-font-family:Cairo;
 }
 
 .channels{
@@ -62,12 +60,10 @@ padding:15px;
 border-radius:8px;
 cursor:pointer;
 text-align:center;
-transition:0.3s;
 }
 
 .channel:hover{
 background:#222;
-transform:scale(1.05);
 }
 
 .live{
@@ -75,8 +71,8 @@ background:red;
 padding:3px 8px;
 border-radius:5px;
 font-size:12px;
-margin-top:5px;
 display:inline-block;
+margin-top:5px;
 }
 
 @media(max-width:768px){
@@ -97,15 +93,9 @@ height:250px!important;
 
 <div class="container">
 
-<video
-id="player"
-class="video-js"
-controls
-preload="auto"
-poster="https://images.unsplash.com/photo-1508098682722-e99c43a406b2"
-></video>
+<video id="player" class="video-js" controls></video>
 
-<input id="search" class="search" placeholder="ابحث عن قناة رياضية">
+<input id="search" class="search" placeholder="ابحث عن قناة">
 
 <div id="channels" class="channels"></div>
 
@@ -117,39 +107,47 @@ poster="https://images.unsplash.com/photo-1508098682722-e99c43a406b2"
 
 const player = videojs('player');
 
-const channels=[
+const playlist =
+"https://iptv-org.github.io/iptv/categories/sports.m3u";
 
-{
-name:"Abu Dhabi Sports",
-url:"https://admdn2.cdn.mangomolo.com/adtv/smil:adsports1.smil/playlist.m3u8"
-},
+let channels=[];
 
-{
-name:"Al Kass Sports",
-url:"https://alkasslive-lh.akamaihd.net/i/alkasslive_1@122526/master.m3u8"
-},
+fetch(playlist)
+.then(res=>res.text())
+.then(data=>{
 
-{
-name:"Kuwait Sports",
-url:"https://kwtslivehls-lh.akamaihd.net/i/kwtslivehls_1@567161/master.m3u8"
-},
+const lines=data.split("\n");
 
-{
-name:"Oman Sports",
-url:"https://partneta.cdn.mangomolo.com/omsport/smil:omsport.stream.smil/playlist.m3u8"
-},
+for(let i=0;i<lines.length;i++){
 
-{
-name:"Bahrain Sports",
-url:"https://5c7b683162943.streamlock.net/live/ngrp:bahrainsports_all/playlist.m3u8"
-},
+if(lines[i].startsWith("#EXTINF")){
 
-{
-name:"Sharjah Sports",
-url:"https://svs.itworkscdn.net/smc4sportslive/smc4.smil/playlist.m3u8"
+let name=lines[i].split(",")[1];
+let url=lines[i+1];
+
+if(
+name.toLowerCase().includes("sport") ||
+name.includes("رياض") ||
+name.includes("Kass") ||
+name.includes("Abu") ||
+name.includes("Dubai") ||
+name.includes("Sharjah")
+){
+
+channels.push({
+name:name,
+url:url
+});
+
 }
 
-];
+}
+
+}
+
+showChannels(channels);
+
+});
 
 
 function showChannels(list){
@@ -160,25 +158,17 @@ container.innerHTML="";
 
 list.forEach(ch=>{
 
-const div=document.createElement("div");
+let div=document.createElement("div");
 
 div.className="channel";
 
-div.innerHTML=`
-
-⚽ ${ch.name}
-<br>
-<span class="live">LIVE</span>
-
-`;
+div.innerHTML=`${ch.name}<br><span class="live">LIVE</span>`;
 
 div.onclick=function(){
 
 player.src({
-
 src:ch.url,
 type:"application/x-mpegURL"
-
 });
 
 player.play();
@@ -190,8 +180,6 @@ container.appendChild(div);
 });
 
 }
-
-showChannels(channels);
 
 
 document.getElementById("search").addEventListener("input",function(){
